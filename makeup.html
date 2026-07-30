@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ff6b9d">
+<title>梦幻美妆坊 · Makeup Studio</title>
+<style>
+/* ========== 基础重置 ========== */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+* { -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+:root {
+    --brand: #ff6b9d;
+    --brand-2: #c06cff;
+    --brand-3: #ffa751;
+    --ink: #6b3a56;
+    --ink-2: #a05a7a;
+    --ink-3: #999;
+    --bg-a: #ffd6e8;
+    --bg-b: #ffe8cc;
+    --bg-c: #e8d4ff;
+    --paper: rgba(255,255,255,0.96);
+    --shadow-soft: 0 8px 24px rgba(255,107,157,0.12);
+    --shadow-hover: 0 12px 36px rgba(255,107,157,0.22);
+    --grad-hero: linear-gradient(135deg, #ff6b9d, #c06cff 55%, #ffa751);
+    --grad-btn:  linear-gradient(135deg, #ff6b9d, #ff8fab);
+    --grad-btn2: linear-gradient(135deg, #a78bfa, #c4b5fd);
+    --ease: cubic-bezier(.22,1,.36,1);
+}
+html, body {
+    width:100%; height:100%; overflow:hidden;
+    font-family:"Microsoft YaHei","PingFang SC",-apple-system,Segoe UI,Helvetica,Arial,sans-serif;
+    background:#ffeef5;
+    touch-action:none;
+    -webkit-font-smoothing:antialiased;
+    color:var(--ink);
+}
+button { font-family:inherit; outline:none; }
+button:focus-visible { outline:2px solid rgba(255,107,157,.55); outline-offset:2px; }
+
+/* ========== 通用工具类 ========== */
+.screen { width:100%; height:100%; display:none; }
+.screen.show { display:flex; }
+.press { transition:transform .15s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease); }
+.press:active { transform:scale(.94); }
+
+/* ========== 主菜单 ========== */
+#mainMenu {
+    background: linear-gradient(135deg, var(--bg-a) 0%, var(--bg-b) 50%, var(--bg-c) 100%);
+    flex-direction:column; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+}
+#mainMenu::before {
+    content:""; position:absolute; inset:-20%;
+    background:
+        radial-gradient(circle at 10% 20%, rgba(255,182,193,0.55) 0%, transparent 35%),
+        radial-gradient(circle at 90% 80%, rgba(200,162,255,0.5) 0%, transparent 35%),
+        radial-gradient(circle at 50% 105%, rgba(255,218,185,0.45) 0%, transparent 55%);
+    filter:blur(20px);
+    animation:bgDrift 14s ease-in-out infinite alternate;
+    pointer-events:none;
+}
+@keyframes bgDrift { from{transform:translate(0,0)} to{transform:translate(-3%,-2%)} }
+
+.game-title {
+    font-size: clamp(34px, 9vw, 76px); font-weight:900;
+    background: var(--grad-hero);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    filter: drop-shadow(0 4px 16px rgba(255,107,157,0.3));
+    letter-spacing: 6px;
+    margin-bottom: 14px;
+    animation: titleFloat 3.6s ease-in-out infinite;
+    z-index:2; position:relative;
+}
+@keyframes titleFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+.game-subtitle {
+    font-size: clamp(13px, 2.8vw, 20px);
+    color: var(--ink-2);
+    letter-spacing: 10px;
+    margin-bottom: 54px;
+    z-index:2; position:relative;
+    opacity:.88;
+}
+
+.menu-btn {
+    width: clamp(230px, 62vw, 330px);
+    padding: 17px 34px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 999px;
+    font-size: clamp(15px, 3.3vw, 19px);
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 2;
+    position: relative;
+    color:#fff;
+    letter-spacing:1px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    transition: transform .28s var(--ease), box-shadow .28s var(--ease), filter .28s var(--ease);
+}
+.menu-btn::after {
+    content:""; position:absolute; inset:0; border-radius:inherit;
+    background:linear-gradient(180deg, rgba(255,255,255,.35), transparent 60%);
+    pointer-events:none;
+    mix-blend-mode:overlay;
+}
+.btn-primary { background: var(--grad-btn); }
+.btn-primary:hover { transform:translateY(-4px); box-shadow:var(--shadow-hover); filter:brightness(1.04); }
+.btn-secondary { background: var(--grad-btn2); }
+.btn-secondary:hover { transform:translateY(-4px); box-shadow:0 10px 30px rgba(167,139,250,0.35); filter:brightness(1.04); }
+
+.deco-star {
+    position:absolute;
+    font-size: clamp(22px, 3.2vw, 34px);
+    animation:twinkle 2.6s ease-in-out infinite;
+    opacity: 0.55;
+    z-index: 1;
+    filter: drop-shadow(0 2px 6px rgba(255,107,157,0.2));
+}
+@keyframes twinkle { 0%,100%{opacity:.28; transform:scale(.85)} 50%{opacity:1; transform:scale(1.18)} }
+
+/* ========== 人物选择 ========== */
+#charSelect {
+    background: linear-gradient(180deg, #fff5f9 0%, #f3e8ff 100%);
+    flex-direction:column; align-items:center;
+    padding: 18px 16px;
+    overflow-y:auto;
+    overflow-x:hidden;
+}
+#charSelect::-webkit-scrollbar { width:8px; }
+#charSelect::-webkit-scrollbar-thumb { background:#ffc8dd; border-radius:8px; }
+
+.select-header {
+    width:100%; max-width:960px;
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:24px;
+    position:sticky; top:0;
+    padding: 6px 4px 14px;
+    background: linear-gradient(180deg, #fff5f9 60%, transparent);
+    z-index: 5;
+}
+.back-btn {
+    width:46px; height:46px;
+    background:#fff;
+    border:2px solid #ff9ec5;
+    border-radius:50%;
+    color: var(--brand);
+    font-size:24px;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow: 0 6px 16px rgba(255,107,157,0.18);
+    transition: all .22s var(--ease);
+    display:flex; align-items:center; justify-content:center;
+}
+.back-btn:hover { transform:translateX(-3px); box-shadow:0 8px 22px rgba(255,107,157,0.28); background:#fff0f6; }
+.back-btn:active { transform:scale(.92); }
+
+.select-title {
+    font-size: clamp(20px, 4.6vw, 30px);
+    color: var(--ink-2);
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #c05a8a, #9b59b6);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.char-grid {
+    width:100%; max-width:960px;
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 18px;
+    padding-bottom: 24px;
+}
+.char-card {
+    background: var(--paper);
+    border-radius: 22px;
+    padding: 10px;
+    display:flex; flex-direction:column; align-items:center;
+    cursor:pointer;
+    border: 3px solid transparent;
+    box-shadow: var(--shadow-soft);
+    transition: all .3s var(--ease);
+    position:relative;
+    overflow:hidden;
+    backdrop-filter: blur(10px);
+}
+.char-card::before {
+    content:""; position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(255,255,255,.6), transparent 50%);
+    pointer-events:none;
+}
+.char-card:hover { transform: translateY(-7px) scale(1.015); box-shadow: var(--shadow-hover); }
+.char-card.selected {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 5px rgba(255,107,157,0.18), var(--shadow-hover);
+    transform: translateY(-4px);
+}
+.char-card img {
+    width:100%; aspect-ratio: 3/4;
+    object-fit:cover;
+    border-radius: 16px;
+    margin-bottom: 10px;
+    background:#f0f0f0;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+}
+.char-name { font-size:15px; color:#444; font-weight:800; letter-spacing:.5px; }
+.char-tag { font-size:11px; color: var(--ink-3); margin-top:3px; text-align:center; line-height:1.3; }
+.char-flaw {
+    font-size:10.5px;
+    color: #b23a6b;
+    margin-top: 6px;
+    background: linear-gradient(135deg, #ffe0ea, #fff0f6);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight:600;
+    border:1px solid rgba(255,107,157,0.18);
+}
+
+.cta-wrap { width:100%; max-width:960px; margin-top:6px; padding-bottom:28px; display:flex; justify-content:center; }
+
+/* ========== 化妆工作台 ========== */
+#makeupStudio {
+    background: linear-gradient(135deg, #fff0f6 0%, #f0e7ff 50%, #fff3e0 100%);
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+}
+.studio-top {
+    width:100%;
+    padding: 10px 14px;
+    display:flex; align-items:center; justify-content:space-between;
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+    z-index: 10;
+    gap: 8px;
+}
+.top-title {
+    font-size: clamp(13px, 3.2vw, 17px);
+    color: var(--ink-2);
+    font-weight: 800;
+    letter-spacing: 1px;
+    white-space:nowrap;
+}
+.top-actions { display:flex; gap: 6px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+.top-btn {
+    width: clamp(34px, 8vw, 40px);
+    height: clamp(34px, 8vw, 40px);
+    min-width: 34px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: clamp(14px, 3.2vw, 18px);
+    display:flex; align-items:center; justify-content:center;
+    transition: all .22s var(--ease);
+    position:relative;
+}
+.top-btn:hover { transform: translateY(-2px); }
+.top-btn:active { transform: scale(.9); }
+.top-btn:disabled { opacity:.38; cursor:not-allowed; transform:none; }
+
+.btn-home    { background:#ffe0ea; color:#ff6b9d; }
+.btn-undo    { background:#e8eaf6; color:#5c6bc0; }
+.btn-clear   { background:#fff3e0; color:#ff9800; }
+.btn-save    { background:#e0f2ff; color:#4a9eff; }
+.btn-zoom    { background:#f5f5f5; color:#555; }
+.btn-precise {
+    background:#e8f5e9; color:#2e7d32;
+    transition: all .25s var(--ease);
+}
+.btn-precise.active {
+    background: linear-gradient(135deg, #43a047, #66bb6a);
+    color:#fff;
+    box-shadow: 0 0 0 2px #a5d6a7, 0 5px 14px rgba(67,160,71,0.32);
+}
+.zoom-label {
+    font-size: clamp(10px, 2.4vw, 12px);
+    color: var(--ink-3);
+    min-width: 40px;
+    text-align:center;
+    font-weight: 700;
+    padding: 0 4px;
+}
+
+.studio-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+/* 画布区 */
+.canvas-area {
+    flex:1;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    padding: 14px;
+    background:
+        radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, transparent 70%),
+        linear-gradient(135deg, #fff8fb 0%, #faf0ff 50%, #fff5ec 100%);
+    overflow: auto;
+    scroll-behavior: smooth;
+}
+.canvas-area::-webkit-scrollbar { width:8px; height:8px; }
+.canvas-area::-webkit-scrollbar-thumb { background:rgba(255,158,197,0.5); border-radius:8px; }
+
+.canvas-wrap {
+    position:relative;
+    border-radius: 20px;
+    overflow: visible;
+    flex-shrink: 0;
+    box-shadow:
+        0 0 0 3px rgba(255,255,255,0.85),
+        0 12px 40px rgba(192,90,138,0.18),
+        0 0 60px rgba(255,107,157,0.12);
+    animation: popIn .45s var(--ease);
+    transform-origin: center center;
+}
+@keyframes popIn { from{transform:scale(.94); opacity:0} to{transform:scale(1); opacity:1} }
+
+.canvas-wrap canvas {
+    display:block;
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    touch-action: none;
+    border-radius: 17px;
+}
+#baseCanvas { position:relative; }
+
+/* 底部工具栏 */
+.tool-panel {
+    background: var(--paper);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.07);
+    z-index:5;
+    display:flex; flex-direction:column;
+    max-height: 52%;
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+    animation: slideUp .4s var(--ease);
+}
+@keyframes slideUp { from{transform:translateY(20px); opacity:0} to{transform:translateY(0); opacity:1} }
+
+.tool-tabs {
+    display:flex;
+    overflow-x:auto;
+    padding: 10px;
+    gap: 8px;
+    background: linear-gradient(180deg, rgba(255,224,234,0.55), rgba(255,224,234,0.22));
+    flex-shrink:0;
+    scrollbar-width:none;
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+}
+.tool-tabs::-webkit-scrollbar { display:none; }
+.tool-tab {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #fff;
+    color: #777;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor:pointer;
+    border: 2px solid transparent;
+    transition: all .25s var(--ease);
+    white-space:nowrap;
+    display:flex; align-items:center; gap:6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.tool-tab:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,107,157,0.12); color: var(--brand); }
+.tool-tab.active {
+    background: var(--grad-btn);
+    color:#fff;
+    border-color: var(--brand);
+    box-shadow: 0 5px 14px rgba(255,107,157,0.32);
+    transform: translateY(-1px);
+}
+.tool-tab .ic { font-size: 16px; }
+
+.tool-body {
+    padding: 12px 14px 14px;
+    overflow-y:auto;
+    flex-shrink:0;
+    max-height: 38vh;
+}
+.tool-body::-webkit-scrollbar { width:6px; }
+.tool-body::-webkit-scrollbar-thumb { background:#ffc8dd; border-radius:6px; }
+
+.color-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.color-swatch {
+    width: 36px; height:36px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid #fff;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.14);
+    transition: all .22s var(--ease);
+    position:relative;
+}
+.color-swatch::after {
+    content:""; position:absolute; inset:0;
+    border-radius:inherit;
+    background: linear-gradient(135deg, rgba(255,255,255,.45), transparent 50%);
+    pointer-events:none;
+}
+.color-swatch:hover { transform: scale(1.18); z-index: 2; box-shadow:0 5px 14px rgba(0,0,0,0.22); }
+.color-swatch.selected {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 3px var(--brand), 0 0 0 6px rgba(255,107,157,0.22), 0 6px 18px rgba(0,0,0,0.22);
+    z-index: 3;
+}
+
+.sliders {
+    display:flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.slider-row {
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    flex: 1 1 150px;
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.slider-row label {
+    font-size: 12px;
+    color: #777;
+    min-width: 44px;
+    font-weight: 700;
+}
+.slider-row input[type=range] {
+    flex: 1;
+    accent-color: var(--brand);
+    height: 26px;
+    cursor: pointer;
+}
+.slider-val {
+    min-width: 34px;
+    text-align:center;
+    font-size: 12px;
+    color: var(--ink-2);
+    font-weight: 800;
+    background: #fff0f6;
+    padding: 3px 6px;
+    border-radius: 8px;
+}
+
+.tool-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 12px;
+    line-height: 1.55;
+    background: linear-gradient(135deg, #fffafc, #faf4ff);
+    padding: 10px 14px;
+    border-radius: 14px;
+    border-left: 4px solid #ff9ec5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.option-label {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    font-weight: 800;
+    margin-bottom: 8px;
+    margin-top: 2px;
+    letter-spacing: .5px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+.option-label::before {
+    content:""; display:inline-block; width:4px; height:14px; border-radius:3px;
+    background: linear-gradient(180deg, var(--brand), var(--brand-2));
+}
+
+/* 刷具卡片 */
+.brush-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.brush-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 8px 4px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all .22s var(--ease);
+    text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap: 3px;
+}
+.brush-card:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(255,107,157,0.12); border-color:#ffe0ea; }
+.brush-card.selected {
+    border-color: var(--brand);
+    background: linear-gradient(135deg, #fff0f6, #faf0ff);
+    box-shadow: 0 5px 16px rgba(255,107,157,0.22);
+    transform: translateY(-2px);
+}
+.brush-card .br-ic { font-size: 22px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); }
+.brush-card .br-name { font-size: 11.5px; color:#444; font-weight: 800; line-height: 1.25; }
+.brush-card .br-desc { font-size: 10px; color: #999; line-height: 1.2; }
+
+/* 笔刷预览光标 */
+#brushCursor {
+    position: fixed;
+    pointer-events: none;
+    border: 2px solid rgba(255,107,157,0.85);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,107,157,0.08) 0%, rgba(255,107,157,0.02) 60%, transparent 100%);
+    z-index: 9000;
+    opacity: 0;
+    transition: width .08s linear, height .08s linear, opacity .12s ease, transform .1s ease;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.7), 0 0 10px rgba(255,107,157,0.35);
+    will-change: transform, left, top, width, height;
+}
+#makeupCanvas { cursor: none; }
+
+/* 保存弹窗 */
+.modal {
+    position: fixed; inset: 0;
+    background: rgba(30, 10, 30, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index: 999;
+    padding: 20px;
+    animation: fadeIn .25s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal.show { display:flex; }
+.modal-content {
+    background: #fff;
+    border-radius: 24px;
+    padding: 24px 22px;
+    max-width: 380px;
+    width: 100%;
+    text-align:center;
+    animation: popIn .35s var(--ease);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+    position:relative;
+    overflow:hidden;
+}
+.modal-content::before {
+    content:""; position:absolute; inset:-1px;
+    background: linear-gradient(135deg, rgba(255,107,157,.14), rgba(192,108,255,.14), rgba(255,167,81,.14));
+    pointer-events:none;
+}
+.modal-title {
+    font-size: 22px;
+    color: var(--ink-2);
+    margin-bottom: 14px;
+    font-weight: 800;
+    background: var(--grad-hero);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+}
+.modal-img {
+    width: 100%;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    background: #f8f8f8;
+}
+.modal-text {
+    font-size: 13.5px;
+    color: #777;
+    margin-bottom: 18px;
+    line-height: 1.7;
+}
+.modal-btns {
+    display:flex;
+    gap: 10px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+.modal-btns button {
+    padding: 11px 22px;
+    border: none;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor:pointer;
+    transition: all .22s var(--ease);
+    color:#fff;
+    letter-spacing: .5px;
+}
+.modal-btns button:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.btn-ghost {
+    background: var(--grad-btn2);
+    box-shadow: 0 5px 14px rgba(167,139,250,0.3);
+}
+.btn-ghost-save {
+    background: var(--grad-btn);
+    box-shadow: 0 5px 14px rgba(255,107,157,0.3);
+}
+
+/* 爆发动画 */
+.burst {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 998;
+    display:none;
+    overflow:hidden;
+}
+.burst.show { display:block; }
+.burst-item {
+    position:absolute;
+    font-size: 30px;
+    animation: burstOut 1.6s ease-out forwards;
+    filter: drop-shadow(0 2px 6px rgba(255,107,157,0.3));
+    will-change: transform, opacity;
+}
+@keyframes burstOut {
+    0%   { transform: translate(0,0) scale(0); opacity: 0; }
+    18%  { transform: translate(var(--tx),var(--ty)) scale(1.3); opacity: 1; }
+    100% { transform: translate(calc(var(--tx)*2.2), calc(var(--ty)*2.2)) scale(.1) rotate(120deg); opacity: 0; }
+}
+
+/* 加载提示 */
+.loading {
+    position:absolute; inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(6px);
+    z-index: 50;
+    color: var(--ink-2);
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 17px;
+}
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3.5px solid #ffc8dd;
+    border-top-color: var(--brand);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ========== 响应式：移动端 ========== */
+@media (max-width: 520px) {
+    .studio-top { padding: 8px 10px; }
+    .top-btn { width: 36px; height: 36px; font-size: 16px; border-radius: 10px; }
+    .char-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .brush-grid { grid-template-columns: repeat(3, 1fr); }
+    .color-grid { grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)); }
+    .color-swatch { width: 32px; height: 32px; }
+    .tool-body { padding: 10px; max-height: 42vh; }
+    .sliders { gap: 8px; }
+    .slider-row { padding: 6px 10px; }
+}
+
+@media (max-width: 380px) {
+    .top-actions { gap: 4px; }
+    .zoom-label { min-width: 34px; font-size: 10px; }
+    .game-title { letter-spacing: 3px; }
+}
+
+/* 深色背景增强（可选） */
+@media (prefers-color-scheme: dark) {
+    /* 维持可爱明亮风，不强制深色 */
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 主菜单 ============ -->
+<div id="mainMenu" class="screen show">
+    <div class="deco-star" style="top:8%;  left:7%;  animation-delay:.0s">✨</div>
+    <div class="deco-star" style="top:12%; right:10%; animation-delay:.5s">💖</div>
+    <div class="deco-star" style="bottom:28%; left:12%; animation-delay:1.0s">🌸</div>
+    <div class="deco-star" style="bottom:22%; right:8%; animation-delay:1.5s">💄</div>
+    <div class="deco-star" style="top:42%; left:4%; animation-delay:.8s">🎀</div>
+    <div class="deco-star" style="top:52%; right:5%; animation-delay:1.2s">💋</div>
+    <div class="deco-star" style="top:72%; left:40%; animation-delay:1.8s">⭐</div>
+    <h1 class="game-title">梦幻美妆坊</h1>
+    <div class="game-subtitle">MAKEUP&nbsp;STUDIO</div>
+    <button class="menu-btn btn-primary" onclick="showCharSelect()">✨ 开始化妆</button>
+    <button class="menu-btn btn-secondary" id="helpBtn">📖 玩法说明</button>
+</div>
+
+<!-- ============ 人物选择 ============ -->
+<div id="charSelect" class="screen">
+    <div class="select-header">
+        <button class="back-btn" aria-label="返回" onclick="showMainMenu()">←</button>
+        <div class="select-title">✨ 选择你的模特 ✨</div>
+        <div style="width:46px;"></div>
+    </div>
+    <div class="char-grid" id="charGrid"></div>
+    <div class="cta-wrap">
+        <button class="menu-btn btn-primary" onclick="confirmChar()" style="margin:0">开始为她化妆 →</button>
+    </div>
+</div>
+
+<!-- ============ 化妆工作台 ============ -->
+<div id="makeupStudio" class="screen">
+    <div class="studio-top">
+        <button class="top-btn btn-home press" onclick="backFromStudio()" title="返回人物选择">🏠</button>
+        <div class="top-title">💄 梦幻美妆坊</div>
+        <div class="top-actions">
+            <button class="top-btn btn-zoom press" id="zoomOutBtn" onclick="zoomOut()" title="缩小 (0.5×~)">➖</button>
+            <span class="zoom-label" id="zoomLevel">100%</span>
+            <button class="top-btn btn-zoom press" id="zoomInBtn" onclick="zoomIn()" title="放大 (~3.0×)">➕</button>
+            <button class="top-btn btn-precise active press" id="preciseBtn" onclick="togglePrecise()" title="精准涂抹：开启 · 按工具区域限制">🎯</button>
+            <button class="top-btn btn-undo press" id="undoBtn" onclick="undo()" title="撤销上一步" disabled>↩️</button>
+            <button class="top-btn btn-clear press" onclick="clearMakeup()" title="卸掉全部妆容">🧽</button>
+            <button class="top-btn btn-save press" onclick="saveMakeup()" title="保存妆容">📷</button>
+        </div>
+    </div>
+    <div class="studio-main">
+        <div class="canvas-area" id="canvasArea">
+            <div class="canvas-wrap" id="canvasWrap">
+                <canvas id="baseCanvas" width="360" height="480"></canvas>
+                <canvas id="makeupCanvas" width="360" height="480"></canvas>
+                <div class="loading" id="loading" style="display:none">
+                    <div class="loading-spinner" aria-hidden="true"></div>
+                    <div>加载模特中…</div>
+                </div>
+            </div>
+        </div>
+        <div class="tool-panel">
+            <div class="tool-tabs" id="toolTabs"></div>
+            <div class="tool-body" id="toolBody"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 保存弹窗 ============ -->
+<div class="modal" id="saveModal" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+    <div class="modal-content">
+        <div class="modal-title" id="saveTitle">🎉 妆容完成！</div>
+        <img class="modal-img" id="saveImg" src="" alt="美妆作品预览" loading="lazy">
+        <div class="modal-text">长按图片即可保存到相册<br>或直接下载 PNG 到本地～</div>
+        <div class="modal-btns">
+            <button class="btn-ghost-save" id="downloadBtn">💾 下载图片</button>
+            <button class="btn-ghost" onclick="closeModal()">继续化妆</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 玩法说明弹窗 ============ -->
+<div class="modal" id="helpModal" role="dialog" aria-modal="true">
+    <div class="modal-content" style="text-align:left">
+        <div class="modal-title" style="text-align:center">📖 玩法说明</div>
+        <div style="font-size:13.5px; color:#555; line-height:1.85; margin-bottom:16px; max-height:52vh; overflow-y:auto; padding-right:6px;">
+            <p><b style="color:#c05a8a">① 选模特</b>：共 6 位，每人带不同皮肤问题（痘印/雀斑/黑眼圈/毛孔/红痘/晒斑）。</p>
+            <p><b style="color:#c05a8a">② 选化妆品</b>：粉底 / 遮瑕 / 散粉 / 腮红 / 修容 / 高光 / 眼影 / 眼线 / 眉笔 / 睫毛 / 口红 / 唇蜜 / 卸妆 / <span style="color:#2e7d32">淡化</span>（14 类）。</p>
+            <p><b style="color:#c05a8a">③ 换刷具</b>：每种化妆品配多种专业刷具，影响覆盖力和范围。</p>
+            <p><b style="color:#c05a8a">④ 调色 + 调笔刷 + 调浓淡</b>：下方滑杆可自由调整。</p>
+            <p><b style="color:#2e7d32">🎯 精准涂抹</b>（默认开启）：腮红只涂脸颊、眼影只涂眼皮、口红只涂嘴唇，<b>完全不遮挡五官</b>。关闭后可全脸自由涂抹。</p>
+            <p><b style="color:#4a9eff">➖➕ 放大缩小</b>：50% ~ 300%，双击画布一键还原；PC 端鼠标滚轮快速缩放；移动端可拖动画面。</p>
+            <p><b style="color:#e65100">☁️ 淡化工具 / 柔化棉</b>：轻微擦掉妆容浓度，不会一下抹干净，修重手非常好用。</p>
+            <p><b style="color:#7b2cbf">↩️ 撤销 / 🧽 全卸妆</b>：放心大胆画，随时重来。</p>
+            <p><b style="color:#d81b60">📷 保存作品</b>：可下载 PNG 原图。</p>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-ghost-save" onclick="closeHelp()">✨ 我知道啦</button>
+        </div>
+    </div>
+</div>
+
+<div class="burst" id="burst" aria-hidden="true"></div>
+
+<div id="brushCursor" aria-hidden="true"></div>
+
+<script>
+/* ======================================================================
+   梦幻美妆坊 · Makeup Studio  ——  核心脚本
+   架构：数据驱动 (CHARACTERS / TOOLS / TOOL_COLORS) + 状态机 (state)
+   ====================================================================== */
+
+/* ---------- 常量配置 ---------- */
+const CANVAS_W = 360;
+const CANVAS_H = 480;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 3.0;
+const ZOOM_STEP = 0.25;
+const MAX_UNDO = 20;
+
+const CHARACTERS = [
+    { id:0, name:"小柔", tag:"甜美·痘印肌",   flaw:"脸颊痘印 + 黑眼圈",   img:"assets/char1.jpg" },
+    { id:1, name:"莉莉", tag:"清纯·雀斑肌",   flaw:"鼻梁雀斑 + 暗沉",     img:"assets/char2.jpg" },
+    { id:2, name:"美娜", tag:"御姐·毛孔粗大", flaw:"鼻翼毛孔 + 法令纹",   img:"assets/char3.jpg" },
+    { id:3, name:"阿娅", tag:"健康·红痘肌",   flaw:"额头下巴红痘",        img:"assets/char4.jpg" },
+    { id:4, name:"雪琪", tag:"冷白·黑眼圈",   flaw:"眼下血管 + 干燥起皮", img:"assets/char5.jpg" },
+    { id:5, name:"朵朵", tag:"活力·晒斑肌",   flaw:"脸颊晒斑 + T区出油",  img:"assets/char6.jpg" },
+];
+
+/* 每种工具：name/icon/size/opacity/blend/hardness/regions（精准涂抹区域）/hint */
+const TOOLS = {
+    foundation: {
+        name:"粉底", icon:"🎨", size:22, opacity:.28, blend:"source-over", hardness:.6,
+        regions:["face"],
+        hint:"全脸打底，遮盖痘印、雀斑。美妆蛋最服帖，粉扑上妆最快。",
+        brushes:[
+            {name:"粉底刷",  icon:"🖌️", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"标准覆盖"},
+            {name:"美妆蛋",  icon:"🥚", sizeMult:.85,  hardMult:.55,  opMult:.9,   desc:"服帖轻薄"},
+            {name:"粉扑",    icon:"🟠", sizeMult:1.25, hardMult:.45,  opMult:1.0,  desc:"大面积快速"},
+            {name:"海绵",    icon:"⬜", sizeMult:.7,   hardMult:.7,   opMult:1.0,  desc:"局部按压"},
+        ]
+    },
+    concealer: {
+        name:"遮瑕", icon:"🩹", size:10, opacity:.5, blend:"source-over", hardness:.85,
+        regions:["face"],
+        hint:"点涂黑眼圈、痘印、斑点。细节刷适合点小瑕疵。",
+        brushes:[
+            {name:"遮瑕刷",  icon:"🖌️", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"标准遮盖"},
+            {name:"细节刷",  icon:"·",  sizeMult:.55,  hardMult:1.1,  opMult:1.0,  desc:"精准小点"},
+            {name:"唇刷",    icon:"💋", sizeMult:.75,  hardMult:.95,  opMult:1.0,  desc:"灵活描画"},
+        ]
+    },
+    powder: {
+        name:"散粉", icon:"⚪", size:20, opacity:.12, blend:"source-over", hardness:.3,
+        regions:["face"],
+        hint:"定妆扫，降低油光、固定底妆。扇形刷带走过量散粉。",
+        brushes:[
+            {name:"散粉刷",  icon:"🌸", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"大范围定妆"},
+            {name:"扇形刷",  icon:"🪶", sizeMult:1.3,  hardMult:.5,   opMult:.85,  desc:"扫除余粉"},
+        ]
+    },
+    blush: {
+        name:"腮红", icon:"🌸", size:18, opacity:.1, blend:"multiply", hardness:.25,
+        regions:["cheekL","cheekR"],
+        hint:"笑肌处打圈晕染，扫太重可用「☁️淡化」轻轻扫开。",
+        brushes:[
+            {name:"腮红刷",  icon:"🌸", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"标准晕染"},
+            {name:"扇形刷",  icon:"🪶", sizeMult:1.2,  hardMult:.6,   opMult:.8,   desc:"轻薄自然"},
+        ]
+    },
+    bronzer: {
+        name:"修容", icon:"🌙", size:14, opacity:.13, blend:"multiply", hardness:.4,
+        regions:["jaw","nose","cheekL","cheekR"],
+        hint:"下颌线、鼻侧、颧骨下方扫阴影，立刻小 V 脸。",
+        brushes:[
+            {name:"斜角刷",  icon:"🔺", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"精准修容"},
+            {name:"鼻影刷",  icon:"👃", sizeMult:.55,  hardMult:1.15, opMult:1.0,  desc:"鼻侧细节"},
+            {name:"大修容刷",icon:"🖌️", sizeMult:1.4,  hardMult:.7,   opMult:.95,  desc:"大面积阴影"},
+        ]
+    },
+    highlight: {
+        name:"高光", icon:"✨", size:12, opacity:.22, blend:"screen", hardness:.5,
+        regions:["nose","cheekL","cheekR","browL","browR","jaw","forehead"],
+        hint:"鼻梁、眉骨、颧骨、下巴提亮，立刻立体。",
+        brushes:[
+            {name:"高光刷",  icon:"✨", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"标准提亮"},
+            {name:"细节刷",  icon:"·",  sizeMult:.5,   hardMult:1.2,  opMult:1.0,  desc:"精准小点"},
+        ]
+    },
+    eyeshadow: {
+        name:"眼影", icon:"👁️", size:9, opacity:.26, blend:"multiply", hardness:.4,
+        regions:["eyeL","eyeR"],
+        hint:"眼皮晕染，可叠多色。眼尾加深更有神。",
+        brushes:[
+            {name:"大晕染刷",icon:"🌀", sizeMult:1.35, hardMult:.55,  opMult:.9,   desc:"大面积铺色"},
+            {name:"中眼影刷",icon:"🖌️", sizeMult:1.0,  hardMult:.85,  opMult:1.0,  desc:"标准上色"},
+            {name:"细节刷",  icon:"·",  sizeMult:.5,   hardMult:1.1,  opMult:1.0,  desc:"眼尾加深"},
+            {name:"扁平刷",  icon:"▬",  sizeMult:.85,  hardMult:1.0,  opMult:1.0,  desc:"亮片上色"},
+        ]
+    },
+    eyeliner: {
+        name:"眼线", icon:"🖌️", size:3, opacity:.92, blend:"source-over", hardness:.95,
+        regions:["eyeL","eyeR"],
+        hint:"沿睫毛根部描画，眼尾上扬即猫眼。",
+        brushes:[
+            {name:"眼线笔",  icon:"🖊️", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"流畅线条"},
+            {name:"眼线刷",  icon:"💧", sizeMult:.7,   hardMult:.95,  opMult:1.0,  desc:"晕染柔和"},
+        ]
+    },
+    brows: {
+        name:"眉笔", icon:"✏️", size:3.5, opacity:.6, blend:"multiply", hardness:.9,
+        regions:["browL","browR"],
+        hint:"顺眉毛生长方向一笔笔描，眉刷轻扫更自然。",
+        brushes:[
+            {name:"眉笔",    icon:"✏️", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"精准描画"},
+            {name:"眉刷",    icon:"🪮", sizeMult:1.5,  hardMult:.6,   opMult:.7,   desc:"晕染自然"},
+        ]
+    },
+    lashes: {
+        name:"睫毛", icon:"👀", size:2.5, opacity:.85, blend:"source-over", hardness:.95,
+        regions:["eyeL","eyeR"],
+        hint:"根部向上刷，Z 字涂抹更纤长浓密。",
+        brushes:[
+            {name:"睫毛膏",  icon:"👀", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"浓密纤长"},
+        ]
+    },
+    lipstick: {
+        name:"口红", icon:"💋", size:8, opacity:.38, blend:"multiply", hardness:.75,
+        regions:["lip"],
+        hint:"填涂唇部，叠多层颜色更深。唇刷可描精致唇线。",
+        brushes:[
+            {name:"口红",    icon:"💋", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"饱满涂色"},
+            {name:"唇刷",    icon:"🖌️", sizeMult:.55,  hardMult:1.1,  opMult:1.0,  desc:"精准描边"},
+        ]
+    },
+    lipgloss: {
+        name:"唇蜜", icon:"💧", size:8, opacity:.28, blend:"screen", hardness:.55,
+        regions:["lip"],
+        hint:"点在唇珠和下唇中央，打造水光嘟嘟唇。",
+        brushes:[
+            {name:"唇蜜刷",  icon:"💧", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"水光提亮"},
+        ]
+    },
+    remover: {
+        name:"卸妆", icon:"🧽", size:18, opacity:1.0, blend:"destination-out", hardness:.6,
+        regions:["face","eyeL","eyeR","browL","browR","cheekL","cheekR","lip","nose","jaw","forehead"],
+        hint:"擦除画错的妆容。☁️柔化棉可轻微淡化不彻底擦除。",
+        brushes:[
+            {name:"卸妆棉",  icon:"🧽", sizeMult:1.0,  hardMult:1.0,  opMult:1.0,  desc:"大面积彻底擦拭"},
+            {name:"柔化棉",  icon:"☁️", sizeMult:1.1,  hardMult:.5,   opMult:.32, desc:"轻微淡化柔和"},
+            {name:"棉签",    icon:"🪡", sizeMult:.3,   hardMult:1.2,  opMult:1.0,  desc:"细节精准修正"},
+        ]
+    },
+    softener: {
+        name:"淡化", icon:"☁️", size:16, opacity:.28, blend:"destination-out", hardness:.35,
+        regions:["face","eyeL","eyeR","browL","browR","cheekL","cheekR","lip","nose","jaw","forehead"],
+        hint:"温柔减淡妆容浓度，画重手的救星，不会完全擦掉。",
+        brushes:[
+            {name:"蓬松刷",  icon:"🪶", sizeMult:1.3,  hardMult:.4,   opMult:1.0,  desc:"大面积柔和淡化"},
+            {name:"晕染刷",  icon:"🌀", sizeMult:1.0,  hardMult:.6,   opMult:1.0,  desc:"中等范围晕染"},
+            {name:"细节刷",  icon:"·",  sizeMult:.5,   hardMult:.9,   opMult:1.0,  desc:"小范围精准减淡"},
+        ]
+    },
+};
+
+/* ---------- 色板 ---------- */
+const FOUNDATION_COLORS = ["#fff1e6","#ffe8d4","#ffdfc4","#ffd4a8","#f5c894","#e8b884","#d4a574","#c4956a","#a67a50","#8b5a2b"];
+const BLUSH_COLORS = ["#ff9bb3","#ff6b8e","#ff4d6d","#e84b7a","#c94a88","#ff8a80","#ffab91","#f8bbd0","#ea80fc","#ff5c8a"];
+const CONTOUR_COLORS = ["#c49050","#a0722d","#8b5a2b","#7a4a2a","#5a3a28","#6d4c41","#8d6e63","#a1887f"];
+const HIGHLIGHT_COLORS = ["#fff0f5","#ffe4ec","#fff4e0","#ffe0c4","#fffde0","#e0f0ff","#f0e4ff","#ffffff"];
+const EYESHADOW_COLORS = [
+    "#fce4ec","#f8bbd0","#f48fb1","#ec407a","#c2185b",
+    "#e8eaf6","#c5cae9","#9fa8da","#5c6bc0","#283593",
+    "#fff3e0","#ffe0b2","#ffcc80","#ff9800","#e65100",
+    "#e0f7fa","#80deea","#26c6da","#0097a7",
+    "#f3e5f5","#ce93d8","#8e24aa",
+    "#eceff1","#90a4ae","#37474f",
+    "#fff9c4","#fff176","#fdd835",
+    "#a5d6a7","#66bb6a"
+];
+const EYELINER_COLORS = ["#1a1a1a","#2c1810","#4a148c","#0d47a1","#b71c1c","#2e7d32","#e65100","#c62828"];
+const BROW_COLORS = ["#2c1810","#4a2e1a","#5a3a28","#7a4a2a","#8b5a2b","#a0722d","#c49050","#444444","#777777"];
+const LASH_COLORS = ["#1a1a1a","#2c1810","#4a148c","#0d47a1","#b71c1c"];
+const LIP_COLORS = [
+    "#ff9999","#ff6666","#e63946","#c1121f","#ff3366","#ff0040",
+    "#ff85a1","#ff5c8a","#d63384","#c2185b","#ad1457",
+    "#ff8a65","#ff7043","#e64a19","#bf360c",
+    "#c77dff","#9d4edd","#7b2cbf","#5a189a",
+    "#f9c74f","#f8961e","#bc6c25",
+    "#999999","#666666","#333333",
+    "#e5989b","#b5838d","#f4acb7"
+];
+const POWDER_COLORS = ["#fff8f0","#fff1e6","#ffe8d4","#ffdfc4","#f5e6d3","#efe0c8","#e8d8c0","#fdfbf7"];
+
+const TOOL_COLORS = {
+    foundation: FOUNDATION_COLORS,
+    concealer:  FOUNDATION_COLORS,
+    powder:     POWDER_COLORS,
+    blush:      BLUSH_COLORS,
+    bronzer:    CONTOUR_COLORS,
+    highlight:  HIGHLIGHT_COLORS,
+    eyeshadow:  EYESHADOW_COLORS,
+    eyeliner:   EYELINER_COLORS,
+    brows:      BROW_COLORS,
+    lashes:     LASH_COLORS,
+    lipstick:   LIP_COLORS,
+    lipgloss:   LIP_COLORS,
+    remover:    ["#000000"],
+    softener:   ["#000000"],
+};
+
+/* ---------- 面部精准区域（椭圆） ---------- */
+const FACE_REGIONS = {
+    face:     { cx:180, cy:250, rx:95,  ry:115 },
+    eyeL:     { cx:145, cy:205, rx:24,  ry:17 },
+    eyeR:     { cx:215, cy:205, rx:24,  ry:17 },
+    browL:    { cx:145, cy:178, rx:28,  ry:11 },
+    browR:    { cx:215, cy:178, rx:28,  ry:11 },
+    cheekL:   { cx:130, cy:258, rx:44,  ry:38 },
+    cheekR:   { cx:230, cy:258, rx:44,  ry:38 },
+    lip:      { cx:180, cy:306, rx:30,  ry:18 },
+    nose:     { cx:180, cy:244, rx:16,  ry:40 },
+    jaw:      { cx:180, cy:336, rx:56,  ry:38 },
+    forehead: { cx:180, cy:162, rx:64,  ry:28 },
+};
+const pointInEllipse = (x,y,cx,cy,rx,ry) =>
+    ((x-cx)**2)/(rx*rx) + ((y-cy)**2)/(ry*ry) <= 1;
+
+const checkAllowed = (x,y,regions) => {
+    if (!regions || regions.length===0) return true;
+    for (const name of regions) {
+        const r = FACE_REGIONS[name];
+        if (r && pointInEllipse(x,y,r.cx,r.cy,r.rx,r.ry)) return true;
+    }
+    return false;
+};
+
+/* ---------- 状态 ---------- */
+const state = {
+    screen: "menu",
+    selectedCharId: 0,
+    currentTool: "foundation",
+    currentColor: FOUNDATION_COLORS[1],
+    brushIndex: 0,
+    brushSize: 1.0,
+    intensity: 1.0,
+    zoom: 1.0,
+    drawing: false,
+    lastX: 0, lastY: 0,
+    undoStack: [],
+    imageLoaded: false,
+    preciseMode: true,
+};
+
+/* ---------- DOM 引用 ---------- */
+const $ = id => document.getElementById(id);
+const baseCanvas = $("baseCanvas"),   baseCtx = baseCanvas.getContext("2d");
+const makeupCanvas = $("makeupCanvas"), mkCtx = makeupCanvas.getContext("2d");
+const loadingEl = $("loading"), canvasWrap = $("canvasWrap"), canvasArea = $("canvasArea");
+const cursorEl = $("brushCursor");
+let currentImage = null;
+
+/* ---------- 工具函数 ---------- */
+const hex2rgba = (h,a) => {
+    h = h.replace("#","");
+    if (h.length===3) h = h.split("").map(c=>c+c).join("");
+    const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
+};
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi, v));
+const vibrate = (ms=14) => { if (navigator.vibrate) try{ navigator.vibrate(ms); }catch(_){} };
+const rafDebounce = (fn) => { let t=0; return (...a)=>{ cancelAnimationFrame(t); t=requestAnimationFrame(()=>fn(...a)); }; };
+
+/* ---------- 屏幕切换 ---------- */
+function showScreen(name){
+    state.screen = name;
+    ["mainMenu","charSelect","makeupStudio"].forEach(id => {
+        const el = $(id);
+        if (id === name) el.classList.add("show");
+        else el.classList.remove("show");
+    });
+}
+const showMainMenu = () => showScreen("mainMenu");
+const showCharSelect = () => { showScreen("charSelect"); renderCharGrid(); };
+const backFromStudio = () => showCharSelect();
+
+function confirmChar(){
+    showScreen("makeupStudio");
+    state.zoom = 1.0;
+    renderToolTabs();
+    renderToolBody();
+    loadImage(CHARACTERS[state.selectedCharId].img);
+    fitCanvas();
+    updateZoomUI();
+}
+
+/* ---------- 画布自适应 ---------- */
+const fitCanvas = rafDebounce(() => {
+    const aw = canvasArea.clientWidth - 28;
+    const ah = canvasArea.clientHeight - 28;
+    const ratio = CANVAS_W / CANVAS_H;
+    let w, h;
+    if (aw/ah > ratio) { h = clamp(ah, 220, 580); w = h * ratio; }
+    else                { w = clamp(aw, 180, 460); h = w / ratio; }
+    w *= state.zoom; h *= state.zoom;
+    canvasWrap.style.width  = w + "px";
+    canvasWrap.style.height = h + "px";
+});
+window.addEventListener("resize", () => { if (state.screen==="makeupStudio") fitCanvas(); });
+
+/* ---------- 缩放 ---------- */
+const zoomIn  = () => setZoom(state.zoom + ZOOM_STEP);
+const zoomOut = () => setZoom(state.zoom - ZOOM_STEP);
+function setZoom(val){
+    const z = clamp(val, MIN_ZOOM, MAX_ZOOM);
+    if (Math.abs(z - state.zoom) < 1e-3) return;
+    state.zoom = z;
+    updateZoomUI();
+    fitCanvas();
+    updateCursor();
+}
+function updateZoomUI(){
+    $("zoomLevel").textContent = Math.round(state.zoom*100) + "%";
+    $("zoomOutBtn").disabled = state.zoom <= MIN_ZOOM + 1e-3;
+    $("zoomInBtn").disabled  = state.zoom >= MAX_ZOOM - 1e-3;
+}
+
+/* 滚轮缩放（PC） */
+canvasArea.addEventListener("wheel", e => {
+    if (state.screen!=="makeupStudio") return;
+    e.preventDefault();
+    setZoom(state.zoom + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP));
+}, { passive:false });
+
+/* 双击画布还原 */
+makeupCanvas.addEventListener("dblclick", () => {
+    state.zoom = 1.0;
+    updateZoomUI();
+    fitCanvas();
+    updateCursor();
+    vibrate(20);
+});
+
+/* ---------- 精准模式切换 ---------- */
+function togglePrecise(){
+    state.preciseMode = !state.preciseMode;
+    const btn = $("preciseBtn");
+    btn.classList.toggle("active", state.preciseMode);
+    btn.title = state.preciseMode
+        ? "精准涂抹：开启 · 按工具区域限制"
+        : "精准涂抹：关闭 · 自由涂抹";
+    vibrate(12);
+}
+
+/* ---------- 加载图片 ---------- */
+function loadImage(src){
+    state.imageLoaded = false;
+    loadingEl.style.display = "flex";
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = () => {
+        currentImage = img;
+        baseCtx.clearRect(0,0,CANVAS_W,CANVAS_H);
+        baseCtx.drawImage(img, 0, 0, CANVAS_W, CANVAS_H);
+        mkCtx.clearRect(0,0,CANVAS_W,CANVAS_H);
+        state.undoStack = [];
+        updateUndoBtn();
+        state.imageLoaded = true;
+        loadingEl.style.display = "none";
+    };
+    img.onerror = () => {
+        loadingEl.lastElementChild.textContent = "图片加载失败，请检查 assets 文件夹";
+    };
+    img.src = src;
+}
+
+/* ---------- 渲染：人物卡片 ---------- */
+function renderCharGrid(){
+    const g = $("charGrid");
+    g.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    CHARACTERS.forEach((c, idx) => {
+        const card = document.createElement("div");
+        card.className = "char-card" + (idx === state.selectedCharId ? " selected" : "");
+        card.innerHTML = `
+            <img src="${c.img}" alt="${c.name}" loading="lazy">
+            <div class="char-name">${c.name}</div>
+            <div class="char-tag">${c.tag}</div>
+            <div class="char-flaw">⚠️ ${c.flaw}</div>`;
+        card.addEventListener("click", () => {
+            state.selectedCharId = idx;
+            vibrate(8);
+            renderCharGrid();
+        });
+        frag.appendChild(card);
+    });
+    g.appendChild(frag);
+}
+
+/* ---------- 渲染：工具 Tabs ---------- */
+function renderToolTabs(){
+    const t = $("toolTabs");
+    t.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    Object.entries(TOOLS).forEach(([id, tool]) => {
+        const d = document.createElement("div");
+        d.className = "tool-tab" + (id === state.currentTool ? " active" : "");
+        d.innerHTML = `<span class="ic">${tool.icon}</span><span>${tool.name}</span>`;
+        d.addEventListener("click", () => {
+            if (state.currentTool === id) return;
+            state.currentTool = id;
+            state.brushIndex = 0;
+            // 自动匹配第一个色
+            const colors = TOOL_COLORS[id] || [];
+            if (!colors.includes(state.currentColor) && colors.length) {
+                state.currentColor = colors[0];
+            }
+            vibrate(8);
+            renderToolTabs();
+            renderToolBody();
+            updateCursor();
+        });
+        frag.appendChild(d);
+    });
+    t.appendChild(frag);
+}
+
+/* ---------- 渲染：工具 Body ---------- */
+function renderToolBody(){
+    const b = $("toolBody");
+    b.innerHTML = "";
+    const tool = TOOLS[state.currentTool];
+    const colors = TOOL_COLORS[state.currentTool] || [];
+    const brushes = tool.brushes || [];
+
+    // 刷子选择
+    if (brushes.length > 1) {
+        const bl = document.createElement("div");
+        bl.className = "option-label";
+        bl.textContent = "🖌️ 刷具";
+        b.appendChild(bl);
+        const bg = document.createElement("div");
+        bg.className = "brush-grid";
+        brushes.forEach((br, idx) => {
+            const c = document.createElement("div");
+            c.className = "brush-card" + (idx === state.brushIndex ? " selected" : "");
+            c.innerHTML = `
+                <span class="br-ic">${br.icon}</span>
+                <span class="br-name">${br.name}</span>
+                <span class="br-desc">${br.desc}</span>`;
+            c.addEventListener("click", () => {
+                state.brushIndex = idx;
+                vibrate(6);
+                renderToolBody();
+            });
+            bg.appendChild(c);
+        });
+        b.appendChild(bg);
+    } else {
+        state.brushIndex = 0;
+    }
+
+    // 颜色
+    if (colors.length > 1) {
+        const cl = document.createElement("div");
+        cl.className = "option-label";
+        cl.textContent = "🎨 颜色";
+        b.appendChild(cl);
+        const cg = document.createElement("div");
+        cg.className = "color-grid";
+        colors.forEach(c => {
+            const s = document.createElement("div");
+            s.className = "color-swatch" + (c === state.currentColor ? " selected" : "");
+            s.style.background = c;
+            s.title = c;
+            s.addEventListener("click", () => {
+                state.currentColor = c;
+                vibrate(6);
+                renderToolBody();
+            });
+            cg.appendChild(s);
+        });
+        b.appendChild(cg);
+    }
+
+    // 滑杆
+    const sl = document.createElement("div");
+    sl.className = "sliders";
+    sl.innerHTML = `
+        <div class="slider-row">
+            <label>笔刷</label>
+            <input type="range" id="sizeSlider" min="0.3" max="2.5" step="0.05" value="${state.brushSize}">
+            <div class="slider-val" id="sizeVal">${state.brushSize.toFixed(1)}</div>
+        </div>
+        <div class="slider-row">
+            <label>浓淡</label>
+            <input type="range" id="intSlider"  min="0.2" max="2"   step="0.05" value="${state.intensity}">
+            <div class="slider-val" id="intVal">${state.intensity.toFixed(1)}</div>
+        </div>`;
+    b.appendChild(sl);
+
+    $("sizeSlider").addEventListener("input", e => {
+        state.brushSize = +e.target.value;
+        $("sizeVal").textContent = state.brushSize.toFixed(1);
+        updateCursor();
+    });
+    $("intSlider").addEventListener("input", e => {
+        state.intensity = +e.target.value;
+        $("intVal").textContent = state.intensity.toFixed(1);
+    });
+
+    // 提示
+    const hint = document.createElement("div");
+    hint.className = "tool-hint";
+    const br = brushes[state.brushIndex] || brushes[0];
+    hint.innerHTML = `<b style="color:#c05a8a">💡 ${tool.name}</b>：${tool.hint}` +
+        (br ? `<br>🖌️ 当前：<b>${br.name}</b>（${br.desc}）` : "");
+    b.appendChild(hint);
+}
+
+/* ---------- 画笔逻辑 ---------- */
+function getPos(e){
+    const rect = makeupCanvas.getBoundingClientRect();
+    const sx = CANVAS_W / rect.width;
+    const sy = CANVAS_H / rect.height;
+    return {
+        x: clamp((e.clientX - rect.left) * sx, 0, CANVAS_W),
+        y: clamp((e.clientY - rect.top ) * sy, 0, CANVAS_H),
+    };
+}
+function getBrushParams(){
+    const tool = TOOLS[state.currentTool];
+    const br   = (tool.brushes && tool.brushes[state.brushIndex]) || {};
+    const r    = Math.max(0.5, tool.size * (br.sizeMult || 1) * state.brushSize);
+    const hard = clamp(tool.hardness * (br.hardMult || 1), 0, 0.98);
+    const opMult = br.opMult != null ? br.opMult : 1;
+    return { tool, r, hard, opMult };
+}
+
+function stamp(x,y){
+    const { tool, r, hard, opMult } = getBrushParams();
+    // 精准涂抹限制
+    if (state.preciseMode && !checkAllowed(x, y, tool.regions)) return;
+
+    const alpha = clamp(tool.opacity * state.intensity * opMult, 0.01, 1);
+    mkCtx.globalCompositeOperation = tool.blend;
+    const grad = mkCtx.createRadialGradient(x,y,0, x,y,r);
+    grad.addColorStop(0,    hex2rgba(state.currentColor, alpha));
+    grad.addColorStop(hard, hex2rgba(state.currentColor, alpha));
+    grad.addColorStop(1,    hex2rgba(state.currentColor, 0));
+    mkCtx.fillStyle = grad;
+    mkCtx.beginPath();
+    mkCtx.arc(x,y,r, 0, Math.PI*2);
+    mkCtx.fill();
+    mkCtx.globalCompositeOperation = "source-over";
+}
+
+function drawStroke(x0,y0,x1,y1){
+    const { r } = getBrushParams();
+    const dist = Math.hypot(x1-x0, y1-y0);
+    const step = Math.max(0.5, r * 0.18);
+    const steps = Math.max(1, Math.ceil(dist / step));
+    for (let i=0; i<=steps; i++){
+        const t = i / steps;
+        stamp(x0 + (x1-x0)*t, y0 + (y1-y0)*t);
+    }
+}
+
+/* ---------- 笔刷预览光标 ---------- */
+const updateCursor = rafDebounce(() => {
+    if (state.screen !== "makeupStudio" || !state.imageLoaded) {
+        cursorEl.style.opacity = "0";
+        return;
+    }
+    const { r } = getBrushParams();
+    const rect = makeupCanvas.getBoundingClientRect();
+    const scale = rect.width / CANVAS_W;
+    const px = Math.max(6, r * 2 * scale);
+    cursorEl.style.width  = px + "px";
+    cursorEl.style.height = px + "px";
+});
+const moveCursor = e => {
+    cursorEl.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+};
+makeupCanvas.addEventListener("pointerenter", () => { cursorEl.style.opacity = "0.72"; updateCursor(); });
+makeupCanvas.addEventListener("pointerleave", () => { cursorEl.style.opacity = "0"; });
+makeupCanvas.addEventListener("pointermove",  e => { moveCursor(e); });
+
+/* ---------- 撤销 ---------- */
+function pushUndo(){
+    try {
+        const data = mkCtx.getImageData(0, 0, CANVAS_W, CANVAS_H);
+        state.undoStack.push(data);
+        if (state.undoStack.length > MAX_UNDO) state.undoStack.shift();
+        updateUndoBtn();
+    } catch (_) {}
+}
+function updateUndoBtn(){
+    $("undoBtn").disabled = state.undoStack.length === 0;
+}
+function undo(){
+    if (state.undoStack.length === 0) return;
+    const data = state.undoStack.pop();
+    mkCtx.putImageData(data, 0, 0);
+    updateUndoBtn();
+    vibrate(10);
+}
+function clearMakeup(){
+    if (!confirm("确定要卸掉全部妆容吗？（可撤销一步恢复）")) return;
+    pushUndo();
+    mkCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+    vibrate(20);
+}
+
+/* ---------- Pointer 事件 ---------- */
+function onPointerDown(e){
+    if (!state.imageLoaded) return;
+    e.preventDefault();
+    try { makeupCanvas.setPointerCapture(e.pointerId); } catch(_){}
+    state.drawing = true;
+    pushUndo();
+    const p = getPos(e);
+    state.lastX = p.x; state.lastY = p.y;
+    stamp(p.x, p.y);
+    vibrate(6);
+}
+function onPointerMove(e){
+    if (!state.drawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    drawStroke(state.lastX, state.lastY, p.x, p.y);
+    state.lastX = p.x; state.lastY = p.y;
+}
+function onPointerUp(e){
+    if (!state.drawing) return;
+    state.drawing = false;
+    try { makeupCanvas.releasePointerCapture(e.pointerId); } catch(_){}
+    vibrate(5);
+}
+makeupCanvas.addEventListener("pointerdown",   onPointerDown);
+makeupCanvas.addEventListener("pointermove",   onPointerMove);
+makeupCanvas.addEventListener("pointerup",     onPointerUp);
+makeupCanvas.addEventListener("pointercancel", onPointerUp);
+makeupCanvas.addEventListener("pointerleave",  onPointerUp);
+
+/* ---------- 保存 ---------- */
+function saveMakeup(){
+    if (!state.imageLoaded) return;
+    burstEffect();
+    vibrate(30);
+    setTimeout(() => {
+        const tmp = document.createElement("canvas");
+        tmp.width = CANVAS_W; tmp.height = CANVAS_H;
+        const tx = tmp.getContext("2d");
+        tx.drawImage(baseCanvas, 0, 0);
+        tx.drawImage(makeupCanvas, 0, 0);
+        const url = tmp.toDataURL("image/png");
+        $("saveImg").src = url;
+        $("saveModal").classList.add("show");
+        // 绑定下载按钮
+        const dl = $("downloadBtn");
+        const charName = CHARACTERS[state.selectedCharId]?.name || "makeup";
+        dl.onclick = () => {
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${charName}_美妆作品_${Date.now().toString().slice(-6)}.png`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(()=>a.remove(), 0);
+        };
+    }, 420);
+}
+function closeModal(){ $("saveModal").classList.remove("show"); }
+
+/* ---------- 玩法说明 ---------- */
+$("helpBtn")?.addEventListener("click", () => { $("helpModal").classList.add("show"); });
+function closeHelp(){ $("helpModal").classList.remove("show"); }
+
+/* 点击弹窗外部关闭（仅 help / save） */
+["saveModal","helpModal"].forEach(id => {
+    $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.remove("show"); });
+});
+/* ESC 关闭弹窗 */
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+        closeModal();
+        closeHelp();
+    }
+    if (state.screen === "makeupStudio") {
+        if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z") { e.preventDefault(); undo(); }
+        if (e.key === "=" || e.key === "+") { zoomIn(); }
+        if (e.key === "-") { zoomOut(); }
+    }
+});
+
+/* ---------- 特效：保存时的花瓣雨 ---------- */
+function burstEffect(){
+    const b = $("burst");
+    b.innerHTML = "";
+    b.classList.add("show");
+    const emojis = ["✨","💖","🌸","💋","🎀","💄","⭐","💕","💫","🌷","💐","🎊"];
+    const count = 22;
+    for (let i=0; i<count; i++){
+        const el = document.createElement("div");
+        el.className = "burst-item";
+        el.textContent = emojis[i % emojis.length];
+        el.style.left = (38 + Math.random()*24) + "%";
+        el.style.top  = (38 + Math.random()*24) + "%";
+        el.style.setProperty("--tx", (Math.random()-0.5)*480 + "px");
+        el.style.setProperty("--ty", (Math.random()-0.5)*480 + "px");
+        el.style.animationDelay = (Math.random()*0.35).toFixed(3) + "s";
+        el.style.fontSize = (22 + Math.random()*22|0) + "px";
+        b.appendChild(el);
+    }
+    setTimeout(() => b.classList.remove("show"), 2000);
+}
+
+/* ---------- 初始化 ---------- */
+// 提前设置 cursorEl 使用 transform 定位（moveCursor 已适配）。
+cursorEl.style.left = "0px";
+cursorEl.style.top  = "0px";
+updateCursor();
+showMainMenu();
+</script>
+</body>
+</html>
